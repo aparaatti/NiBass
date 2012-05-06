@@ -38,7 +38,7 @@ iatt ctrl7 1, 73, 0.025, 2
 idec ctrl7 1, 75, 0.1, 5
 
 ;chorusing
-ichor ctrl7 1, 66, 0, 0.003
+kchor ctrl7 1, 66, 0, 1
 
 ; LFO
 kfreq ctrl7 1, 76, 0, 15
@@ -60,6 +60,10 @@ iws ctrl7 1, 90, 1, 4
 iws2 ctrl7 1, 91, 1, 4
 iws3 ctrl7 1, 92, 1, 4
 iwlfo ctrl7 1, 93, 0, 5
+
+kchor=1.003^kchor-1
+kvol=2^kvol-1
+knoisegain=10^knoisegain-1
 
 ;--------values to gui-(send only)-----------------------------------
 
@@ -109,23 +113,18 @@ if kfreqCh == 1 then
 	outvalue "kfreq", kfreq
 endif
 
-;------exponential values----------------------
-
-kchorChanged changed ichor
-if kchorChanged == 1 then
-          ichor pow ichor,1
-	outvalue "ichor", ichor
+kchorChanged changed kchor
+if kchorChanged == 1 then1
+	outvalue "kchor", kchor
 endif
 
 kvolChanged changed kvol
 if kvolChanged == 1 then
-          kvol pow kvol, 1
 	outvalue "kvol", kvol
 endif
 
 ksgCh changed knoisegain
 if ksgCh == 1 then
-          knoisegain pow knoisegain, 1
 	outvalue "knoisegain", knoisegain
 endif
 
@@ -181,13 +180,13 @@ kmodu   lfo     1, kfreq, iwlfo
 
 if (ksynth == 1 ) then
     if (kpitch == 1) then ;värinä
-        a3      oscili  ak1, (knote+kmodu*kpitchdepth*10)*(1-ichor),iws2
-        a2      oscili   ak1, (knote+kmodu*kpitchdepth*10)*(1+ichor),iws3
+        a3      oscili  ak1, (knote+kmodu*kpitchdepth*10)*(1-kchor),iws2
+        a2      oscili   ak1, (knote+kmodu*kpitchdepth*10)*(1+kchor),iws3
         a1      oscili   ak1, (knote+kmodu*kpitchdepth*10), iws
         a1 = a1 + a2 + a3
     else
-        a3      oscili   ak1, knote*(1-ichor),iws2
-        a2      oscili   ak1, knote*(1+ichor),iws3
+        a3      oscili   ak1, knote*(1-kchor),iws2
+        a2      oscili   ak1, knote*(1+kchor),iws3
         a1      oscili   ak1, knote, iws
         a1 = a1 + a2 + a3
     endif
@@ -1232,7 +1231,7 @@ steepness</label>
   <borderwidth>1</borderwidth>
  </bsbObject>
  <bsbObject version="2" type="BSBDisplay">
-  <objectName>ichor</objectName>
+  <objectName>kchor</objectName>
   <x>113</x>
   <y>119</y>
   <width>39</width>
