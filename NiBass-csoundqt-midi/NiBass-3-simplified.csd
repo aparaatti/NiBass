@@ -17,7 +17,7 @@
 <CsInstruments>
 
 sr=96000
-ksmps=512
+ksmps=512;kr tekijä
 nchnls=2
 
 massign 1,1
@@ -28,42 +28,47 @@ iveloc ampmidi 10000
 iscale = 0.33 * iveloc
 idur = 1
 
+;attack, decay
+iatt ctrl7 1, 73, 0.025, 2 			
+idec ctrl7 1, 75, 0.01, 1
+
+;on/off
+inoise ctrl7 1, 68, 0, 1
+isynth ctrl7 1, 69, 0, 1
+
+;waves
+iws ctrl7 1, 90, 1, 13
+iws2 ctrl7 1, 91, 1, 13
+iws3 ctrl7 1, 92, 1, 13
+iwlfo ctrl7 1, 93, 1, 13
+
 kpan ctrl7 1, 10, 1, 0
 kvol ctrl7 1, 7, 0, 1
 knoisegain ctrl7 1, 74, 0, 1
 knoisenote ctrl7 1, 88, 0, 1
 
-;attack, decay
-iatt ctrl7 1, 73, 0.025, 2
-idec ctrl7 1, 75, 0.1, 5
-
 ;chorusing
 kchor ctrl7 1, 66, 0, 1
 
 ; LFO
-kfreq ctrl7 1, 76, 0, 15
-klfos ctrl7 1, 65, 0, 1 ;vol lfo
+kfreq ctrl7 1, 76, 0, 1
+klfos ctrl7 1, 65, 0, 1 ;vol lfo depth
+
 kpanon ctrl7 1, 61, 0, 1
 kpitch ctrl7 1, 63, 0, 1
 kcuttlfo ctrl7 1, 62, 0, 1
 kpitchdepth ctrl7 1, 77, 0, 1 ;depth for vol, pan and/or pitch
 ;LFO/cutt
-kcuttdepth ctrl7 1, 78, 1, 1000 ;depth for cutt lfo
-ksteepness ctrl7 1, 72, 1, 40 ;steepness of the cutt
+kcuttdepth ctrl7 1, 78, 0, 127 ;depth for cutt lfo
+ksteepness ctrl7 1, 72, 0, 1 ;steepness of the cutt
 
-;on/off
-knoise ctrl7 1, 68, 0, 1
-ksynth ctrl7 1, 69, 0, 1
-
-;waves
-iws ctrl7 1, 90, 1, 4
-iws2 ctrl7 1, 91, 1, 4
-iws3 ctrl7 1, 92, 1, 4
-iwlfo ctrl7 1, 93, 0, 5
-
-kchor=1.003^kchor-1
+;non linear:
+kchor=1.006^kchor-1
 kvol=2^kvol-1
 knoisegain=10^knoisegain-1
+kfreq = 20^kfreq-1
+ksteepness = 100^ksteepness
+idec=5^idec-1
 
 ;--------values to gui-(send only)-----------------------------------
 
@@ -114,7 +119,7 @@ if kfreqCh == 1 then
 endif
 
 kchorChanged changed kchor
-if kchorChanged == 1 then1
+if kchorChanged == 1 then
 	outvalue "kchor", kchor
 endif
 
@@ -152,13 +157,13 @@ kpitCh changed kpitch
 if kpitCh == 1 then
 	outvalue "kpitch", kpitch
 endif
-knoiseCh changed knoise
+knoiseCh changed inoise
 if knoiseCh == 1 then
-	outvalue "knoise", knoise
+	outvalue "knoise", inoise
 endif
-ksynthCh changed ksynth
+ksynthCh changed isynth
 if ksynthCh == 1 then
-	outvalue "ksynth", ksynth
+	outvalue "ksynth", isynth
 endif
 
 kcutflo changed kcuttlfo
@@ -171,18 +176,19 @@ if kpanch == 1 then
          outvalue "kpan",kpan
 endif
 
-;-----------------------------------------------------------------------
 
-ak1	linenr	iscale, iatt, idec, 0.1
-k1 linenr	iscale, iatt, idec, 0.1
-;adclck linsegr    0, .01, 1, idec-0.004, 0 ; Declick envelope
-kmodu   lfo     1, kfreq, iwlfo
+;Envelopes;
+ak1	linenr iscale, iatt, idec, 0.1
+k1 linenr iscale, iatt, idec, 0.1
 
-if (ksynth == 1 ) then
+amodu oscil 1,kfreq, iwlfo
+kmodu  downsamp amodu
+
+if (isynth == 1 ) then
     if (kpitch == 1) then ;värinä
-        a3      oscili  ak1, (knote+kmodu*kpitchdepth*10)*(1-kchor),iws2
-        a2      oscili   ak1, (knote+kmodu*kpitchdepth*10)*(1+kchor),iws3
-        a1      oscili   ak1, (knote+kmodu*kpitchdepth*10), iws
+        a3      oscili ak1, (knote+amodu*kpitchdepth*10)*(1-kchor),iws2
+        a2      oscili   ak1, (knote+amodu*kpitchdepth*10)*(1+kchor),iws3
+        a1      oscili   ak1, (knote+amodu*kpitchdepth*10), iws
         a1 = a1 + a2 + a3
     else
         a3      oscili   ak1, knote*(1-kchor),iws2
@@ -192,44 +198,49 @@ if (ksynth == 1 ) then
     endif
 endif
 
-if (knoise == 1) then ;noise
-        ares random 30, 20000
+if (inoise == 1) then ;noise
+        ares random 60, 20000
+        ares2 random 60, 20000
+        ares3 random 60, 20000
 
-        ares areson ares, knote, 127, 2, 0
+        ares areson ares, knote, 128, 2, 0
+        ares2 areson ares2, knote, 128, 2, 0
+        ares3 areson ares3, knote, 128, 2, 0
 
         if (kcuttlfo==0) then
            ares butterbp ares, knote, ksteepness*ksteepness
-           ares butterbp ares, knote*2, ksteepness*ksteepness
-           ares butterbp ares, knote*3, ksteepness*ksteepness
+           ares2 butterbp ares2, knote*2, ksteepness*ksteepness
+           ares3 butterbp ares3, knote*3, ksteepness*ksteepness
         endif
+
+        ares = (ares + ares2 + ares3) * 0.33
 
         ares=ares*0.0001*knoisegain
 
-        if (ksynth == 1) then
-           a1 = (1-knoisenote)*a1 + knoisenote*ares*k1
+        if (isynth == 1) then
+           a1 = (1-knoisenote)*a1 + knoisenote*ares*ak1
         else
-           a1 = ares * k1
+           a1 = ares * ak1
         endif
 endif
 
 if (kcuttlfo == 1) then
-        a1 butterbp a1, (knote+kmodu*kcuttdepth), ksteepness*ksteepness
+        a1 butterbp a1, knote,  ksteepness*ksteepness+(kmodu+1-0.5*isynth)*kcuttdepth*(0.05+isynth*2)
 endif
 
 a1 butterhp a1, 50
 
 if (klfos == 1 && kfreq > 0.0015) then
-    a1 = a1 * kvol * (1-kmodu*kpitchdepth)
+    a1 = a1 * kvol * (1-amodu*kpitchdepth)
         outs a1*kpan, a1* (1-kpan)
 elseif kpanon ==1 then
     a1 = a1 * kvol
-        outs  a1*(1 - kmodu*kpitchdepth), a1*(1+kmodu*kpitchdepth)
+        outs  a1*(1 - amodu*kpitchdepth)*kpan, a1*(1+amodu*kpitchdepth)*(1-kpan)
 else
     a1 = a1 * kvol
         outs a1*kpan, a1*(1-kpan)
 endif
 endin
-
 </CsInstruments>
 
 <CsScore>
