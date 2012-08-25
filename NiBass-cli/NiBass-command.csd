@@ -6,7 +6,7 @@
 ;display used waveforms and controller changes, and there'll be a version
 ;with GUI controls only.)
 ;
-;I used M-audio AxiumPro49 so if you have one, you know you have enough buttons
+;I used M-audio AxiomPro49 so if you have one, you know you have enough buttons
 ;to control this :D. There probaply is mistakes in there, and if you spot
 ;one I would be happy to become aware of such. So comments are welcome at 
 ;nikohuma <at> gmail <dot> com.
