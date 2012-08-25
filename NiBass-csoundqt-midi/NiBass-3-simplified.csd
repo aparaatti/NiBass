@@ -2,10 +2,10 @@
 ;License: GPLv3 http://www.gnu.org/licenses/gpl-3.0.txt
 ;
 ;Csoundqt version of a csound synth inteted to be played and controlled 
-;with midi-keyboard (also a version comming that uses controllers 
-;from csoundqt). 
+;with midi-keyboard, has GUI for displaying stuff (also a version comming 
+;that uses GUI controllers to control). 
 ;
-;I used M-audio AxiumPro49 so if you have one, you know you have enough buttons
+;I used M-audio AxiomPro49 so if you have one, you know you have enough buttons
 ;to control this :D. There probaply is mistakes in there, and if you spot
 ;one I would be happy to become aware of such. So comments are welcome at 
 ;nikohuma <at> gmail <dot> com.
