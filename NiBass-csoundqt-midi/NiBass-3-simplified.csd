@@ -1,66 +1,33 @@
 ;
 ;License: GPLv3 http://www.gnu.org/licenses/gpl-3.0.txt
 ;
-;Csoundqt version of my first csound synth inteted to be played and controlled 
-;with midi-keyboard (I'm also planning to make a version that uses controllers 
-;from csoundqt and there is a commandline version). 
+;Csoundqt version of a csound synth inteted to be played and controlled 
+;with midi-keyboard (also a version comming that uses controllers 
+;from csoundqt). 
 ;
 ;I used M-audio AxiumPro49 so if you have one, you know you have enough buttons
-;to control this :D. There probaply is stupid mistakes in there, and if you spot
+;to control this :D. There probaply is mistakes in there, and if you spot
 ;one I would be happy to become aware of such. So comments are welcome at 
 ;nikohuma <at> gmail <dot> com.
 ;
-;Niko Humalamäki
-<CsoundSynthesizer>
-<CsOptions>
-</CsOptions>
+;thanks to rgareus @ LAD for pointing stuff out
 <CsInstruments>
-
 sr=96000
-ksmps=512;kr tekijä
+kr=9600
+ksmps=10
+
 nchnls=2
 
 massign 1,1
 
-instr 1 
+instr 1
+#include "midibindingsQt.asc"
+#include "guibindings.asc"
+ 
 knote cpsmidib 1
 iveloc ampmidi 10000
 iscale = 0.33 * iveloc
 idur = 1
-
-;attack, decay
-iatt ctrl7 1, 73, 0.025, 2 			
-idec ctrl7 1, 75, 0.01, 1
-
-;on/off
-inoise ctrl7 1, 68, 0, 1
-isynth ctrl7 1, 69, 0, 1
-
-;waves
-iws ctrl7 1, 90, 1, 13
-iws2 ctrl7 1, 91, 1, 13
-iws3 ctrl7 1, 92, 1, 13
-iwlfo ctrl7 1, 93, 1, 13
-
-kpan ctrl7 1, 10, 1, 0
-kvol ctrl7 1, 7, 0, 1
-knoisegain ctrl7 1, 74, 0, 1
-knoisenote ctrl7 1, 88, 0, 1
-
-;chorusing
-kchor ctrl7 1, 66, 0, 1
-
-; LFO
-kfreq ctrl7 1, 76, 0, 1
-klfos ctrl7 1, 65, 0, 1 ;vol lfo depth
-
-kpanon ctrl7 1, 61, 0, 1
-kpitch ctrl7 1, 63, 0, 1
-kcuttlfo ctrl7 1, 62, 0, 1
-kpitchdepth ctrl7 1, 77, 0, 1 ;depth for vol, pan and/or pitch
-;LFO/cutt
-kcuttdepth ctrl7 1, 78, 0, 127 ;depth for cutt lfo
-ksteepness ctrl7 1, 72, 0, 1 ;steepness of the cutt
 
 ;non linear:
 kchor=1.006^kchor-1
@@ -70,197 +37,153 @@ kfreq = 20^kfreq-1
 ksteepness = 100^ksteepness
 idec=5^idec-1
 
-;--------values to gui-(send only)-----------------------------------
-
-kws changed iws
-if  kws == 1 then
-    outvalue "iws", iws-1
-endif
-
-kws2 changed iws2
-if  kws == 1 then
-    outvalue "iws2", iws2-1
-endif
-
-kws3 changed iws3
-if  kws == 1 then
-    outvalue "iws3", iws3-1
-endif
-
-kattCh changed iatt
-if kattCh == 1 then
-	outvalue "katt", iatt
-endif
-
-kdecCh changed idec
-if kdecCh == 1 then
-	outvalue "idec", idec
-endif
-
-kwlfoch changed iwlfo
-if kwlfoch == 1 then
-	outvalue "iwlfo", int(iwlfo)
-endif
-
-kpitchdepthChanged changed kpitchdepth
-if kpitchdepthChanged == 1 then
-	outvalue "kpitchdepth", kpitchdepth
-endif
-
-kcuttdepthChanged changed kcuttdepth
-if kcuttdepthChanged == 1 then
-	outvalue "kcuttdepth", kcuttdepth
-endif
-
-kfreqCh	changed	kfreq
-if kfreqCh == 1 then
-          kfreq pow kfreq, 1
-	outvalue "kfreq", kfreq
-endif
-
-kchorChanged changed kchor
-if kchorChanged == 1 then
-	outvalue "kchor", kchor
-endif
-
-kvolChanged changed kvol
-if kvolChanged == 1 then
-	outvalue "kvol", kvol
-endif
-
-ksgCh changed knoisegain
-if ksgCh == 1 then
-	outvalue "knoisegain", knoisegain
-endif
-
-;---------------------------------------------------
-
-ksnCh changed knoisenote
-if ksnCh == 1 then
-	outvalue "knoisenote", knoisenote
-	endif
-
-kstCh changed ksteepness
-if kstCh == 1 then
-    outvalue "ksteepness", ksteepness
-endif
-
-klfosCh changed klfos
-if klfosCh == 1 then
-	outvalue "klfos", klfos
-endif
-kpanoCh changed kpanon
-if kpanoCh == 1 then
-	outvalue "kpanon", kpanon
-endif
-kpitCh changed kpitch
-if kpitCh == 1 then
-	outvalue "kpitch", kpitch
-endif
-knoiseCh changed inoise
-if knoiseCh == 1 then
-	outvalue "knoise", inoise
-endif
-ksynthCh changed isynth
-if ksynthCh == 1 then
-	outvalue "ksynth", isynth
-endif
-
-kcutflo changed kcuttlfo
-if kcutflo == 1 then
-	outvalue "kcuttlfo", kcuttlfo
-endif
-
-kpanch changed kpan
-if kpanch == 1 then
-         outvalue "kpan",kpan
-endif
-
-
-;Envelopes;
+;Envelopes; 
 ak1	linenr iscale, iatt, idec, 0.1
-k1 linenr iscale, iatt, idec, 0.1
+ak2 linenr iscale, iatt, 0.01, 0.1
 
-amodu oscil 1,kfreq, iwlfo
-kmodu  downsamp amodu
+;Shorter decay for bass
+if (knote < 221 && ibass == 1) then
+	ak1=ak2
+endif
 
-if (isynth == 1 ) then
-    if (kpitch == 1) then ;värinä
-        a3      oscili ak1, (knote+amodu*kpitchdepth*10)*(1-kchor),iws2
-        a2      oscili   ak1, (knote+amodu*kpitchdepth*10)*(1+kchor),iws3
-        a1      oscili   ak1, (knote+amodu*kpitchdepth*10), iws
-        a1 = a1 + a2 + a3
+if( inoise==0 && isynth==0) then
+	isynth=1
+endif
+
+amodu oscil	1, kfreq, iwlfo
+kmodu downsamp amodu
+
+;adjust vol to 400Hz sine
+a440   oscili   ak1, 69, 1
+
+;if synth on or noise off --> synth
+if ( isynth == 1 ) then
+    if (kpitch == 1) then
+	an3	oscil	ak1, (knote+amodu*kpitchdepth*10)*(1-kchor),iws2
+	an2	oscil	ak1, (knote+amodu*kpitchdepth*10)*(1+kchor),iws3
+	an1 oscil	ak1, (knote+amodu*kpitchdepth*10), iws
     else
-        a3      oscili   ak1, knote*(1-kchor),iws2
-        a2      oscili   ak1, knote*(1+kchor),iws3
-        a1      oscili   ak1, knote, iws
-        a1 = a1 + a2 + a3
+	an3	oscil	ak1, knote*(1-kchor),iws2
+	an2	oscil	ak1, knote*(1+kchor),iws3
+	an1 oscil	ak1, knote, iws	
     endif
+
+    an = (an1+an2+an3) * 0.33
 endif
 
-if (inoise == 1) then ;noise
-        ares random 60, 20000
-        ares2 random 60, 20000
-        ares3 random 60, 20000
+;if noise on or synth off --> noise
+if ( inoise == 1 ) then
+    inoise = 1
+    ares random 20, 20000
+    ares2 random 20, 20000
+    ares3 random 20, 20000
 
-        ares areson ares, knote, 128, 2, 0
-        ares2 areson ares2, knote, 128, 2, 0
-        ares3 areson ares3, knote, 128, 2, 0
+    ares areson ares, knote, 128, 2, 0	
+    ares2 areson ares2, knote, 128, 2, 0
+    ares3 areson ares3, knote, 128, 2, 0
+    ares = ares+ares2+ares3
+        
+    ;if no cutt lfo --> do filttering here
+    if (kcuttlfo==0) then
+            ares butterbp ares, knote, ksteepness
+            ares2 butterbp ares, knote*2, ksteepness
+            ares3 butterbp ares, knote*3, ksteepness
+    endif
 
-        if (kcuttlfo==0) then
-           ares butterbp ares, knote, ksteepness*ksteepness
-           ares2 butterbp ares2, knote*2, ksteepness*ksteepness
-           ares3 butterbp ares3, knote*3, ksteepness*ksteepness
-        endif
-
-        ares = (ares + ares2 + ares3) * 0.33
-
-        ares=ares*0.0001*knoisegain
-
-        if (isynth == 1) then
-           a1 = (1-knoisenote)*a1 + knoisenote*ares*ak1
-        else
-           a1 = ares * ak1
-        endif
+    ares = (ares + ares2 + ares3) *  ak1
 endif
 
+;if cuttlfo, filter
 if (kcuttlfo == 1) then
-        a1 butterbp a1, knote,  ksteepness*ksteepness+(kmodu+1-0.5*isynth)*kcuttdepth*(0.05+isynth*2)
+	a2 butterbp ares, knote, ksteepness+(1+kmodu)*kcuttdepth
+          a3 butterbp ares, knote*2, ksteepness+(1+kmodu)*kcuttdepth
+          a4 butterbp ares, knote*3, ksteepness+(1+kmodu)*kcuttdepth
+	a1 balance (a2 + a3 + a4), a440
+else
+	a1 balance ares, a440
 endif
 
-a1 butterhp a1, 50
+;If noise and synth on --> combine
+if( isynth == 1 && inoise == 1) then
+	a1 = (a1 * knoisenote  + an * (knoisenote - 1)) * 0.5
+endif
 
+;If noise not on --> synth only
+if( isynth == 1 && inoise == 0) then
+	a1 = an
+endif
+
+;sort of so so equal-loudness thingy
+a1 eqfil a1, 40, 100, 6
+a1 pareq a1, 200, 0.2, 0.707, 2
+a1 eqfil a1, 1000, 700, 0.8 
+a1 eqfil a1, 3000, 1000, 2
+
+
+; Different output combinations:
 if (klfos == 1 && kfreq > 0.0015) then
-    a1 = a1 * kvol * (1-amodu*kpitchdepth)
-        outs a1*kpan, a1* (1-kpan)
+    a1 = a1 * kvol *(1-amodu*kpitchdepth)
+
+	outs a1*kpan, a1* (1-kpan)
 elseif kpanon ==1 then
     a1 = a1 * kvol
-        outs  a1*(1 - amodu*kpitchdepth)*kpan, a1*(1+amodu*kpitchdepth)*(1-kpan)
+
+	outs  a1*(1-amodu*kpitchdepth)*kpan, a1*(1+amodu*kpitchdepth)*(1-kpan)
 else
     a1 = a1 * kvol
-        outs a1*kpan, a1*(1-kpan)
+
+	outs a1*kpan, a1*(1-kpan)
 endif
 endin
+
 </CsInstruments>
 
 <CsScore>
 f0 30000000
-f1 0 4096 10 1 ;sine
-f2 0 4096 10 1 1 1 .7 .5 .3 .1     ;pulse
-f3 0 4096 7 1 4096 -1 ;triangle
-f4 0 4096 7 1 2048 1 0 -1 2048 -1 ;square
+f1 0 4096 	10	1 ;sine
+f2 0 4096 	10	1 1 1 .7 .5 .3 .1     ;pulse
+f3 0 32 7	1 2 0.7 2 1 2 0.6 2 1 2 0.4 2 1 2 0.2 2 1 2 0.5 2 0.1 2 0 2 1.2 5 0.4 5 ;harsh 1
+f4 0 32 7	0 2 1.2 5 0.4 5 0.1 2 0 2 1.2 5 0.4 5	;harsh 2
+f5 0 32 7	1 2 0.7 2 1 2 0.6 2 1 2 0.4 2 0.9 2 0.2 2 0.8 2 0.15 2 0.7 2 0 2 0.6 2 0 2 0.5 2 0.2 2 ;harsh 3
+f6 0 64 5	1 2 120 60 1 1 0.001 1 ;exp decay
+f7 0 4096 	7	1 4096 -1 ;triangle
+f8 0 4096 	7	1 2048 1 0 -1 2048 -1 ;square
+f9 0 32 7	1 2 0.4 1.5 1 1.5 0.6 2 1 2 0.4 2 0.9 2 0.2 2 0.8 2 0.15 2 0.7 2 0 2 0.6 2 0.2 0.5 0.2 0.5 0.2 ;harsh 4
+;http://www.csounds.com/ezine/spectra/
+;- Partial No.  1    2   3   4  5   6  7  8   9  10  11 12  13  14  15  6  17  18  19  20  21
+f10 0 16384 10	0    .8  .5  0  .3  0  0  .2  0  0   0  0   .1
+f11 0 16384 10	1.3  .8  .5  0  .3  0  0  .2  0  0   0  0   .1  0   0   0   0   0   0   0  .1
+; Fibonacci Partials 1.3        2.1        3.4        5.5        8.9        14.4        23.3
+f12 0 16384 9	130 .89 0  210 .55 0  340 .34 0  550 .21 0  890 .13 0  1440 .05 0  233 .05 0
+; Lucas Partials     1.1      1.8        2.9        4.7        7.6        12.3        19.9 
+f13 0 16384 9	110 1 0  180 .89 0  290 .55 0  470 .34 0  760 .21 0  1230 .13 0  1990 .08 0
+f14 0 1024 10 1 1 1 1 1 1
+f15 0 1024 	7 0 10 1 236 1	10 0.8 125 0.8 	10 -0.7 180 -0.7 	10 0.5 50 0.5	11 -0.2 600 -0.2 20 0 
+f16 0 1024 	5 1 256 1	2 0.8 256 0.8 	2 0.7 100 0.7 	2 0.5 300 0.5 
+;f14 0 0 23 "/home/aparaatti/Desktop/Dropbox/Audio/Set-up/aalto.txt"
 </CsScore>
 </CsoundSynthesizer>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <bsbPanel>
  <label>Widgets</label>
  <objectName/>
- <x>771</x>
- <y>79</y>
+ <x>791</x>
+ <y>78</y>
  <width>432</width>
- <height>477</height>
+ <height>537</height>
  <visible>true</visible>
  <uuid/>
  <bgcolor mode="background">
@@ -359,7 +282,7 @@ steepness</label>
  <bsbObject version="2" type="BSBLabel">
   <objectName/>
   <x>140</x>
-  <y>47</y>
+  <y>50</y>
   <width>56</width>
   <height>41</height>
   <uuid>{e22b212d-d34c-4000-a3fa-38093f19d6ba}</uuid>
@@ -513,7 +436,7 @@ steepness</label>
   <midicc>0</midicc>
   <minimum>0.00000000</minimum>
   <maximum>3.00000000</maximum>
-  <value>0.10000000</value>
+  <value>1.91526112</value>
   <mode>lin</mode>
   <mouseControl act="jump">continuous</mouseControl>
   <resolution>0.01000000</resolution>
@@ -531,7 +454,7 @@ steepness</label>
   <midicc>0</midicc>
   <minimum>0.00000000</minimum>
   <maximum>3.00000000</maximum>
-  <value>0.25000000</value>
+  <value>0.02500000</value>
   <mode>lin</mode>
   <mouseControl act="jump">continuous</mouseControl>
   <resolution>0.01000000</resolution>
@@ -635,8 +558,8 @@ steepness</label>
   <midichan>0</midichan>
   <midicc>7</midicc>
   <minimum>0.00000000</minimum>
-  <maximum>1.00000000</maximum>
-  <value>0.33070866</value>
+  <maximum>4.00000000</maximum>
+  <value>1.57480315</value>
   <mode>lin</mode>
   <mouseControl act="jump">continuous</mouseControl>
   <resolution>-1.00000000</resolution>
@@ -652,7 +575,7 @@ steepness</label>
   <visible>true</visible>
   <midichan>0</midichan>
   <midicc>0</midicc>
-  <value>2</value>
+  <value>0</value>
   <objectName2>iws3</objectName2>
   <zoomx>1.00000000</zoomx>
   <zoomy>0.20000000</zoomy>
@@ -1086,7 +1009,7 @@ steepness</label>
   <midicc>0</midicc>
   <minimum>0.00000000</minimum>
   <maximum>1000.00000000</maximum>
-  <value>1.00000000</value>
+  <value>0.00000000</value>
   <mode>lin</mode>
   <mouseControl act="jump">continuous</mouseControl>
   <resolution>0.01000000</resolution>
@@ -1141,14 +1064,14 @@ steepness</label>
   <x>50</x>
   <y>377</y>
   <width>347</width>
-  <height>100</height>
+  <height>160</height>
   <uuid>{08f85d85-04dc-4dbb-b9b9-3416ba552f24}</uuid>
   <visible>true</visible>
   <midichan>0</midichan>
   <midicc>0</midicc>
   <value>-255.00000000</value>
   <type>scope</type>
-  <zoomx>2.00000000</zoomx>
+  <zoomx>1.00000000</zoomx>
   <zoomy>7.00000000</zoomy>
   <dispx>1.00000000</dispx>
   <dispy>1.00000000</dispy>
@@ -1242,7 +1165,7 @@ steepness</label>
   <borderwidth>1</borderwidth>
  </bsbObject>
  <bsbObject version="2" type="BSBDisplay">
-  <objectName>kchor</objectName>
+  <objectName>ichor</objectName>
   <x>113</x>
   <y>119</y>
   <width>39</width>
@@ -1367,7 +1290,7 @@ steepness</label>
   <visible>true</visible>
   <midichan>0</midichan>
   <midicc>0</midicc>
-  <label>0.000</label>
+  <label>1.000</label>
   <alignment>left</alignment>
   <font>Nimbus Sans L</font>
   <fontsize>18</fontsize>
@@ -1405,6 +1328,50 @@ steepness</label>
    <r>192</r>
    <g>255</g>
    <b>192</b>
+  </color>
+  <bgcolor mode="nobackground">
+   <r>255</r>
+   <g>255</g>
+   <b>255</b>
+  </bgcolor>
+  <bordermode>noborder</bordermode>
+  <borderradius>1</borderradius>
+  <borderwidth>1</borderwidth>
+ </bsbObject>
+ <bsbObject version="2" type="BSBCheckBox">
+  <objectName>kbass</objectName>
+  <x>160</x>
+  <y>104</y>
+  <width>20</width>
+  <height>20</height>
+  <uuid>{96f8bd84-5781-4287-ba33-9dd94a710a5b}</uuid>
+  <visible>true</visible>
+  <midichan>0</midichan>
+  <midicc>0</midicc>
+  <selected>true</selected>
+  <label/>
+  <pressedValue>1</pressedValue>
+  <randomizable group="0">false</randomizable>
+ </bsbObject>
+ <bsbObject version="2" type="BSBLabel">
+  <objectName/>
+  <x>125</x>
+  <y>89</y>
+  <width>80</width>
+  <height>41</height>
+  <uuid>{c688026d-56d4-4ddb-ba6f-19af3d54cddb}</uuid>
+  <visible>true</visible>
+  <midichan>0</midichan>
+  <midicc>0</midicc>
+  <label>low freq no dec</label>
+  <alignment>left</alignment>
+  <font>Nimbus Sans L</font>
+  <fontsize>10</fontsize>
+  <precision>3</precision>
+  <color>
+   <r>0</r>
+   <g>0</g>
+   <b>0</b>
   </color>
   <bgcolor mode="nobackground">
    <r>255</r>
