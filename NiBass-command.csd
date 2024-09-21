@@ -50,8 +50,7 @@ instr 1
   ksteepness = 100^ksteepness
   idec = 5^idec - 1
 
-  ; Envelope ;
-  ak1 linenr iscale, iatt, ( knote < 221 && ibass == 1 ) ? 0.01 : idec, 0.1
+  ak1 linenr iscale, iatt, ( i(knote) < 221 && ibass == 1 ) ? 0.01 : idec, 0.1
   
   ; LFO ;
   amodu oscil  1, kfreq, iwlfo
@@ -103,22 +102,18 @@ instr 1
   endif
 
   ; OUTPUT ;
-  if( isynth == 1 && inoise == 1 ) then
-    a1 = (a1 * knoisenote  + an * (knoisenote - 1)) * 0.5
+  if( isynth == 1) then
+    a1 = (inoise == 1 ? (a1 * knoisenote  + an * (knoisenote - 1)) * 0.5 : an)
   endif
-
-  if( isynth == 1 ) then a1 = an endif
 
   a1 eqfil a1, 40, 100, 6
   a1 pareq a1, 200, 0.2, 0.707, 2
   a1 eqfil a1, 1000, 700, 0.8 
   a1 eqfil a1, 3000, 1000, 2
-  a1 = aq * kvol
+  a1 = a1 * kvol
 
-  amod1 = amod2 = (1 - amodu * kpitchdepth) 
-
-  ; && (klfos != 1 && kfreq < 0.0015) TODO
-  if ( kpanon == 1 ) then amod2 = (1 + amodu * kpitchdepth) endif
+  amod1 = (1 - amodu * kpitchdepth) 
+  amod2 = (kpanon == 1 ? (1 + amodu * kpitchdepth) : amod1)
 
   outs a1 * amod1 * kpan, a1 * amod2 * (1 - kpan)
 endin
