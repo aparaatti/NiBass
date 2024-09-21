@@ -6,41 +6,39 @@ ksmps = 9600
 kr = 10
 nchnls = 2
 
-massign 1, 1
+massign 1,1
 
 instr 1
   knote cpsmidib 1
-  iveloc ampmidi 10000
-  iscale = 0.33 * iveloc
-  idur = 1
+  iscale ampmidi 10000
 
-  iatt ctrl7 1, 73, 0.025, 2
-  idec ctrl7 1, 75, 0.01, 1
+  ; MIDI            ch cc   min    max
+  iatt        ctrl7 1, 73,  0.025, 2
+  idec        ctrl7 1, 75,   0.01, 1
 
-  inoise ctrl7 1, 68, 0, 1
-  isynth ctrl7 1, 69, 1, 0
-  ibass ctrl7 1, 70, 1, 0 
-  kpanon ctrl7 1, 61, 0, 1
+  inoise      ctrl7 1, 68,      0, 1
+  isynth      ctrl7 1, 69,      1, 0
+  ibass       ctrl7 1, 70,      1, 0 
+  kpanon      ctrl7 1, 61,      0, 1
 
-  iws ctrl7 1, 90, 1, 16
-  iws2 ctrl7 1, 91, 1, 16
-  iws3 ctrl7 1, 92, 1, 16
-  iwlfo ctrl7 1, 93, 1, 16
+  iws1        ctrl7 1, 90,      1, 16
+  iws2        ctrl7 1, 91,      1, 16
+  iws3        ctrl7 1, 92,      1, 16
+  iwlfo       ctrl7 1, 93,      1, 16
+  kpan        ctrl7 1, 10,      1, 0
+  kvol        ctrl7 1, 7,       0, 4 
+  knoisegain  ctrl7 1, 74,      0, 1
+  knoisenote  ctrl7 1, 88,      0, 1
+  kchor       ctrl7 1, 66,      0, 1
 
-  kpan ctrl7 1, 10, 1, 0
-  kvol ctrl7 1, 7, 0, 4 
-  knoisegain ctrl7 1, 74, 0, 1
-  knoisenote ctrl7 1, 88, 0, 1
-  kchor ctrl7 1, 66, 0, 1
+  kfreq       ctrl7 1, 76,      0, 1
+  klfos       ctrl7 1, 65,      0, 1
 
-  kfreq ctrl7 1, 76, 0, 1
-  klfos ctrl7 1, 65, 0, 1
-
-  kpitch ctrl7 1, 63, 0, 1
-  kcuttlfo ctrl7 1, 62, 0, 1
-  kpitchdepth ctrl7 1, 77, 0, 1
-  kcuttdepth ctrl7 1, 78, 0, 127
-  ksteepness ctrl7 1, 72, 0, 1
+  kpitch      ctrl7 1, 63,      0, 1
+  kcuttlfo    ctrl7 1, 62,      0, 1
+  kpitchdepth ctrl7 1, 77,      0, 1
+  kcuttdepth  ctrl7 1, 78,      0, 127
+  ksteepness  ctrl7 1, 72,      0, 1
 
   ; Non linear parameters ;
   kchor = 1.006^kchor - 1
@@ -50,29 +48,25 @@ instr 1
   ksteepness = 100^ksteepness
   idec = 5^idec - 1
 
-  ak1 linenr iscale, iatt, ( i(knote) < 221 && ibass == 1 ) ? 0.01 : idec, 0.1
-  
+  aenvelope linenr iscale, iatt, (i(knote) < 221 && ibass == 1 ? 0.01 : idec), 0.1
+  a1 oscil aenvelope, knote, iws1
+
   ; LFO ;
   amodu oscil  1, kfreq, iwlfo
-  kmodu downsamp amodu
 
-  ; SYNTH ;
   if ( isynth == 1 ) then
-    if ( kpitch == 1 ) then
-      an3 oscil ak1, (knote + amodu * kpitchdepth * 10) * (1 - kchor), iws2
-      an2 oscil ak1, (knote + amodu * kpitchdepth * 10) * (1 + kchor), iws3
-      an1 oscil ak1, (knote + amodu * kpitchdepth * 10), iws
-    else
-      an3 oscil ak1, knote * (1 - kchor), iws2
-      an2 oscil ak1, knote * (1 + kchor), iws3
-      an1 oscil ak1, knote, iws
-    endif
+    prints "SYNTH ON"
+    amodulate = amodu * kpitchdepth * 10 * kpitch
+  
+    an3 oscil aenvelope, (knote + amodulate) * (1 - kchor), iws2
+    an2 oscil aenvelope, (knote + amodulate) * (1 + kchor), iws3
+    an1 oscil aenvelope, knote + amodulate, iws1
 
-    an = (an1 + an2 + an3) * 0.33
+    an = (an1 + an2 + an3)
   endif
 
-  ; NOISE ;
   if ( inoise == 1 ) then
+    prints "NOISE ON"
     ares1 random 20, 20000
     ares2 random 20, 20000
     ares3 random 20, 20000
@@ -81,41 +75,31 @@ instr 1
     ares2 areson ares2, knote, 128, 2, 0
     ares3 areson ares3, knote, 128, 2, 0
 
-    ares1 = (ares1 + ares2 + ares3)
+    ares = (ares1 + ares2 + ares3)
   endif
 
-  a440   oscili   ak1, 69, 1
+  ; COMBINE ;
+  a0 = ( isynth == 1 ? an : a1 )
+  a0 = ( inoise == 1 ? a0 * knoisenote  + ares * ( knoisenote - 1 ) : a0 )
 
-  if ( kcuttlfo == 1 ) then
-    a2 butterbp ares1, knote, ksteepness + (1 + kmodu) * kcuttdepth
-    a3 butterbp ares1, knote * 2, ksteepness + (1 + kmodu) * kcuttdepth
-    a4 butterbp ares1, knote * 3, ksteepness + (1 + kmodu) * kcuttdepth
-    a1 balance (a2 + a3 + a4), a440
-  else
-    ares1 butterbp ares1, knote, ksteepness
-    ares2 butterbp ares1, knote * 2, ksteepness
-    ares3 butterbp ares1, knote * 3, ksteepness
+  ; FILTER ;
+  a440   oscili   aenvelope, 69, 1
+  a2 butterbp a0, knote, ksteepness + ((1 + amodu) * kcuttdepth * kcuttlfo)
+  a3 butterbp a0, knote * 2, ksteepness + ((1 + amodu) * kcuttdepth * kcuttlfo)
+  a4 butterbp a0, knote * 3, ksteepness + ((1 + amodu) * kcuttdepth * kcuttlfo)
+  a0 balance (a2 + a3 + a4), a440
 
-    ares1 = (ares1 + ares2 + ares3) * ak1
-
-    a1 balance ares1, a440
-  endif
+  a0 eqfil a0, 40, 100, 6
+  a0 pareq a0, 200, 0.2, 0.707, 2
+  a0 eqfil a0, 1000, 700, 0.8
+  a0 eqfil a0, 3000, 1000, 2
 
   ; OUTPUT ;
-  if( isynth == 1) then
-    a1 = (inoise == 1 ? (a1 * knoisenote  + an * (knoisenote - 1)) * 0.5 : an)
-  endif
+  amplitudeMod1 = (1 - amodu * kpitchdepth)
+  amplitudeMod2 = (kpanon == 1 ? 1 + amodu * kpitchdepth : amplitudeMod1)
 
-  a1 eqfil a1, 40, 100, 6
-  a1 pareq a1, 200, 0.2, 0.707, 2
-  a1 eqfil a1, 1000, 700, 0.8 
-  a1 eqfil a1, 3000, 1000, 2
-  a1 = a1 * kvol
-
-  amod1 = (1 - amodu * kpitchdepth) 
-  amod2 = (kpanon == 1 ? (1 + amodu * kpitchdepth) : amod1)
-
-  outs a1 * amod1 * kpan, a1 * amod2 * (1 - kpan)
+  outs (a0 * amplitudeMod1 * kpan * kvol), 
+        (a0 * amplitudeMod2 * (1 - kpan) * kvol)
 endin
 </CsInstruments>
 
