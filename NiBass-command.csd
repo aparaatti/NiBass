@@ -114,16 +114,23 @@ instr 1
   ; GUI
   prints "\033c"
   prints "                  ______________________\n"
-  prints "           ,=====/ PAN: %03.1f = VOL: %04.1f \\\\=====.\n",  kpan, kvol
-  prints "           ▏ SYNTH: [ %02i %02i %02i ]   CH: %0.3f  ▕\n",    iws1, iws2, iws3, kchor 
-  prints "           ▏ LFO 01:   [ %02i ]      Fq: %05.2f  ▕\n",       iwlfo1, kfreq1
-  prints "           ▏   PAN     %04.1f                %s  ▕\n",       kpandepth                    , (klfopanon   == 1 ? "󰄮" : "")
-  prints "           ▏   CUT     %03i %06.3f          %s  ▕\n",       kcuttdepth,  ksteepness      , (klfocuton   == 1 ? "󰄮" : "")
-  prints "           ▏ LFO 02:      [ %02i ]      Fq: %05.2f  ▕\n",       iwlfo2, kfreq2
-  prints "           ▏   VOL     %04.1f                %s  ▕\n",      kvoldepth                    , (klfovolon   == 1 ? "󰄮" : "")
-  prints "           ▏   PITCH   %04.1f                %s  ▕\n",      kpitchdepth                  , (klfopitchon == 1 ? "󰄮" : "")
-  prints "           ▏ NOISE:    %02.1f %03.2f               ▕\n",     knoisegain*inoise, knoisenote
-  prints "           `=====\\\\ A:%03.1f D:%03.1f %s %05.1f /====='\n", iatt, idec                  , (ibasson == 1 ? "󰄮" : ""), iscale
+  prints "           ,=====/ PAN: %03.1f = VOL: %04.1f \\\\=====.\n", kpan, kvol
+  prints "           ▏ SYNTH: [ %02i %02i %02i ]  C: %0.3f %s ▕\n", iws1, iws2, iws3, kchor,
+    (isynth == 1 ? "🟢" : "🔴")
+  prints "           ▏ LFO 01:   [ %02i ]      Fq: %05.2f  ▕\n", iwlfo1, kfreq1
+  prints "           ▏   PAN     %3.2f                %s ▕\n", kpandepth,
+    (klfopanon   == 1 ? "🟢" : "🔴")
+  prints "           ▏   CUT     %03i %06.3f          %s ▕\n", kcuttdepth,  ksteepness,
+    (klfocuton   == 1 ? "🟢" : "🔴")
+  prints "           ▏ LFO 02:   [ %02i ]      Fq: %05.2f  ▕\n", iwlfo2, kfreq2
+  prints "           ▏   VOL     %3.2f                %s ▕\n", kvoldepth,
+    (klfovolon   == 1 ? "🟢" : "🔴")
+  prints "           ▏   PITCH   %3.2f                %s ▕\n", kpitchdepth,
+    (klfopitchon == 1 ? "🟢" : "🔴")
+  prints "           ▏ NOISE:    %02.1f %03.2f            %s ▕\n", knoisegain*inoise, knoisenote,
+    (inoise == 1 ?  "🟢" : "🔴")
+  prints "           `=====\\\\ A:%03.1f D:%03.1f%s %05.1f /====='\n", iatt, idec,
+    (ibasson == 1 ? "🟢" : "🔴"), iscale
   prints "                  ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔\n"
 endin
 </CsInstruments>
