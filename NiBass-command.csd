@@ -34,7 +34,7 @@ instr 1
   kfreq1      ctrl7 1, 76,      0, 1
   iwlfo1      ctrl7 1, 93,      1, 16
   kfreq2      ctrl7 1, 20,      0, 1
-  iwlfo2      ctrl7 1, 5,      1, 16
+  iwlfo2      ctrl7 1, 5,       1, 16
 
   kpitchdepth ctrl7 1, 77,      0, 1
   kpandepth   ctrl7 1, 78,      0, 1
@@ -127,7 +127,7 @@ instr 1
     (klfovolon   == 1 ? "🟢" : "🔴")
   prints "           ▏   PITCH   %3.2f                %s ▕\n", kpitchdepth,
     (klfopitchon == 1 ? "🟢" : "🔴")
-  prints "           ▏ NOISE:    %02.1f %03.2f            %s ▕\n", knoisegain*inoise, knoisenote,
+  prints "           ▏ NOISE:    %02.1f %03.2f            %s ▕\n", knoisegain, knoisenote,
     (inoise == 1 ?  "🟢" : "🔴")
   prints "           `=====\\\\ A:%03.1f D:%03.1f%s %05.1f /====='\n", iatt, idec,
     (ibasson == 1 ? "🟢" : "🔴"), iscale
